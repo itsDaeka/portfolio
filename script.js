@@ -331,27 +331,74 @@ const term = $('body').terminal(commands, {
     checkArity: false,
     // terminal should be disabled when running in CodePen preview
     enabled: $('body').attr('onload') === undefined,
-    completion(string, callback) {
-        const commands = Object.keys(term.commands); // available commands
-        const pathParts = cwd === root ? [] : cwd.substring(2).split('/');
+    completion(string) {
+        const { name, rest } = $.terminal.parse_command(this.get_command());
 
-        // traverse directories object to find current location
-        let currentDir = directories;
-        for (let part of pathParts) {
-            if (currentDir[part]) {
-                currentDir = currentDir[part];
-            }
+        if (!['cd', 'ls'].includes(name)) {
+            return Object.keys(commands);
         }
 
-        // collect subdirectory names at current level
-        const subdirs = Object.keys(currentDir).filter(
-            key => typeof currentDir[key] === 'object'
-        );
+        const cwdParts = cwd === root ? [] : cwd.substring(2).split('/');
 
-        // always allow commands + subdirectories
-        const all = commands.concat(subdirs);
+        function resolvePath(base, input) {
+            let parts;
+            if (input.startsWith('~/')) {
+                parts = input.slice(2).split('/');
+                base = [];
+            } else if (input === '~' || input === '~/') {
+                return [];
+            } else {
+                parts = input.split('/');
+            }
 
-        callback(all.filter(item => item.startsWith(string)));
+            const stack = [...base];
+            for (const part of parts) {
+                if (!part || part === '.') continue;
+                if (part === '..') stack.pop();
+                else stack.push(part);
+            }
+            return stack;
+        }
+
+        function getDir(parts) {
+            let current = directories;
+            for (const part of parts) {
+                if (current && typeof current === 'object' && current[part]) {
+                    current = current[part];
+                } else {
+                    return null;
+                }
+            }
+            return current;
+        }
+
+        const input = rest || '';
+        const pathParts = resolvePath(cwdParts, input);
+
+        let lookupParts, prefix;
+        if (input.endsWith('/')) {
+            lookupParts = pathParts;
+            prefix = '';
+        } else {
+            lookupParts = pathParts.slice(0, -1);
+            prefix = pathParts[pathParts.length - 1] || '';
+        }
+
+        const dir = getDir(lookupParts);
+        if (!dir || typeof dir !== 'object') {
+            return [];
+        }
+
+        const children = Object.keys(dir).filter(k => typeof dir[k] === 'object');
+
+        // Build completions using the raw input up to the prefix
+        const rawBase = input.endsWith('/')
+            ? input
+            : input.substring(0, input.lastIndexOf('/') + 1);
+
+        return children
+            .filter(child => child.startsWith(prefix))
+            .map(child => rawBase + child);
     },
     execHash: true,
     prompt
