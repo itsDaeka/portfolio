@@ -223,44 +223,57 @@ const commands = {
         }
     },
     cd(dir = null) {
-        if (dir === null || dir === '.' || dir === './') {
-            // no arg or "." means stay in cwd
+        if (!dir || dir === '.' || dir === './') {
+            // stay in current directory
             return;
         }
 
-        const pathParts = cwd === root ? [] : cwd.substring(2).split('/');
-
-        if (dir === '..' || dir === '../') {
-            if (pathParts.length > 0) {
-                pathParts.pop(); // go up one level
-                cwd = pathParts.length ? root + '/' + pathParts.join('/') : root;
-            } else {
-                this.error('Already at root directory');
-            }
+        // handle "cd ~" or "cd ~/" explicitly
+        if (dir === '~' || dir === '~/') {
+            cwd = root;
             return;
         }
 
-        // support absolute paths like ~/projects/personal
+        // split cwd into array, ignoring root '~'
+        let pathParts = cwd === root ? [] : cwd.substring(2).split('/');
+
+        // handle absolute paths starting with ~/
         let newParts;
         if (dir.startsWith('~/')) {
             newParts = dir.substring(2).split('/');
         } else {
-            // relative to current directory
-            newParts = [...pathParts, dir];
+            // relative path: split by '/' and process each part
+            newParts = dir.split('/');
+            for (let i = 0; i < newParts.length; i++) {
+                if (newParts[i] === '..') {
+                    if (pathParts.length > 0) {
+                        pathParts.pop();
+                    } else {
+                        this.error('Already at root directory');
+                        return;
+                    }
+                    newParts[i] = null; // mark as processed
+                } else if (newParts[i] === '.' || newParts[i] === '') {
+                    newParts[i] = null; // ignore current dir or empty
+                }
+            }
+            // merge remaining unprocessed parts: allows e.g. "projects/personal" from root
+            newParts = pathParts.concat(newParts.filter(p => p !== null));
         }
 
-        // verify the path exists in directories
+        // traverse directories object to validate path exists
         let current = directories;
-        for (let p of newParts) {
-            if (current[p]) {
-                current = current[p];
+        for (let part of newParts) {
+            if (current[part]) {
+                current = current[part];
             } else {
                 this.error('Wrong directory');
                 return;
             }
         }
 
-        cwd = root + '/' + newParts.join('/');
+        // set new cwd
+        cwd = newParts.length ? root + '/' + newParts.join('/') : root;
     },
     credits() {
         // you can return string or a Promise from a command
