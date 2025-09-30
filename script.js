@@ -140,7 +140,6 @@ const commands = {
                 // leaf directory (list of strings)
                 this.echo(target.join('\n'));
             } else if (typeof target === 'object') {
-                // directory with subdirectories
                 Object.keys(target).forEach(sub => {
                     this.echo(`<blue class="directory">${sub}</blue>`);
                 });
@@ -188,26 +187,34 @@ const commands = {
         }
 
         // --- main logic ---
-        let target;
         if (!path) {
-            // no path → list current directory
-            const parts = cwdParts;
-            target = getDir(parts) || directories;
-        } else {
-            const parts = resolvePath(cwdParts, path);
-            target = getDir(parts);
-        }
-
-        if (!target) {
-            this.error('Invalid directory');
-            return;
-        }
-
-        if (Array.isArray(target) || typeof target === 'object') {
+            // no argument → cwd
+            if (cwd === root) {
+                print_home();   // 🔹 preserve old behaviour
+                return;
+            }
+            const target = getDir(cwdParts);
+            if (!target) {
+                this.error('Invalid directory');
+                return;
+            }
             printDir(target);
         } else {
-            this.error('Invalid directory');
+            if (path.match(/^~\/?$/)) {
+                print_home();   // 🔹 ls ~ → print home
+                return;
+            }
+            const parts = resolvePath(cwdParts, path);
+            const target = getDir(parts);
+
+            if (!target) {
+                this.error(`ls: cannot access '${path}': No such file or directory`);
+                this.echo(``);
+                return;
+            }
+            printDir(target);
         }
+        this.echo(''); // final newline
     },
     async joke() {
         // we use programming jokes so it fit better developer portfolio
@@ -262,12 +269,11 @@ const commands = {
                     if (pathParts.length > 0) {
                         pathParts.pop();
                     } else {
-                        this.error('Already at root directory');
+                        this.error('cd: ..: No such file or directory');
+                        this.echo('');
                         return;
                     }
-                    newParts[i] = null; // mark as processed
-                } else if (newParts[i] === '.' || newParts[i] === '') {
-                    newParts[i] = null; // ignore current dir or empty
+                    newParts[i] = null;
                 }
             }
             // merge remaining unprocessed parts: allows e.g. "projects/personal" from root
@@ -280,10 +286,12 @@ const commands = {
             if (current[part]) {
                 current = current[part];
             } else {
-                this.error('Wrong directory');
+                this.error(`cd: ${dir}: No such file or directory`);
+                this.echo('');
                 return;
             }
         }
+        this.echo(''); // final newline
 
         // set new cwd
         cwd = newParts.length ? root + '/' + newParts.join('/') : root;
