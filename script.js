@@ -372,7 +372,7 @@ term.on('click', '.directory', function() {
 function ready() {
     const seed = rand(256);
     term.echo(() => rainbow(render(' itsDaeka'), seed))
-        .echo('<white>Welcome to my Portfolio Website,\nType "help" for a list of commands, use the "ls" and "cd" commands to navigate the terminal portfolio.</white>\n').resume();
+        .echo('<white>Welcome to my Portfolio Website,\nType "help" for a list of commands, use the "ls" and "cd" commands to navigate the UNIX style terminal portfolio.</white>\n').resume();
 }
 
 function rainbow(string, seed) {
