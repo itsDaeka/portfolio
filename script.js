@@ -134,7 +134,7 @@ const commands = {
     help() {
         term.echo(`List of available commands: ${help}`);
     },
-    ls(dir = null) {
+    ls(path = null) {
         const printDir = (target) => {
             if (Array.isArray(target)) {
                 // leaf directory (list of strings)
@@ -147,53 +147,66 @@ const commands = {
             }
         };
 
-        if (dir) {
-            if (dir.match(/^~\/?$/)) {
-                print_home();
-            } else if (dir.startsWith('~/')) {
-                const path = dir.substring(2).split('/');
-                let current = directories;
-                for (let p of path) {
-                    if (current[p]) {
-                        current = current[p];
-                    } else {
-                        this.error('Invalid directory');
-                        return;
-                    }
-                }
-                printDir(current);
-            } else if (cwd === root) {
-                if (dir in directories) {
-                    printDir(directories[dir]);
-                } else {
-                    this.error('Invalid directory');
-                }
-            } else if (dir === '..') {
-                print_home();
+        // --- helpers (reuse from cd/autocomplete) ---
+        const cwdParts = cwd === root ? [] : cwd.substring(2).split('/');
+
+        function resolvePath(base, input) {
+            if (!input) return [...base];
+
+            let parts;
+            if (input.startsWith('~/')) {
+                parts = input.slice(2).split('/');
+                base = [];
+            } else if (input === '~' || input === '~/') {
+                return [];
             } else {
-                const rel = cwd.substring(2).split('/');
-                let current = directories;
-                for (let p of rel) {
-                    current = current[p];
-                }
-                if (current[dir]) {
-                    printDir(current[dir]);
+                parts = input.split('/');
+            }
+
+            const stack = [...base];
+            for (const part of parts) {
+                if (!part || part === '.') continue;
+                if (part === '..') {
+                    if (stack.length > 0) stack.pop();
                 } else {
-                    this.error('Invalid directory');
+                    stack.push(part);
                 }
             }
+            return stack;
+        }
+
+        function getDir(parts) {
+            let current = directories;
+            for (const part of parts) {
+                if (current && typeof current === 'object' && current[part]) {
+                    current = current[part];
+                } else {
+                    return null;
+                }
+            }
+            return current;
+        }
+
+        // --- main logic ---
+        let target;
+        if (!path) {
+            // no path → list current directory
+            const parts = cwdParts;
+            target = getDir(parts) || directories;
         } else {
-            // no dir provided: list cwd
-            if (cwd === root) {
-                print_home();
-            } else {
-                const path = cwd.substring(2).split('/');
-                let current = directories;
-                for (let p of path) {
-                    current = current[p];
-                }
-                printDir(current);
-            }
+            const parts = resolvePath(cwdParts, path);
+            target = getDir(parts);
+        }
+
+        if (!target) {
+            this.error('Invalid directory');
+            return;
+        }
+
+        if (Array.isArray(target) || typeof target === 'object') {
+            printDir(target);
+        } else {
+            this.error('Invalid directory');
         }
     },
     async joke() {
@@ -302,8 +315,6 @@ const commands = {
         } else {
             term.echo('save commands in url hash so you can share the link\n\n' +
                       'usage: record [stop|start]\n');
-            term.echo('<white>NOTE</white>: this command will not work on CodePen,' +
-                     ' becuase it use an iframe!');
         }
     }
 };
