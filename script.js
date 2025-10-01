@@ -122,18 +122,45 @@ function prompt() {
 }
 
 function print_home() {
-     term.echo(dirs.map(dir => {
-         return `<blue class="directory">${dir}</blue>`;
-     }).join('\n'));
-     term.echo(files.map(file => {
-         return `<green class="command">${file}</green>`;
-     }).join('\n'));
+    term.echo(dirs.map(dir => {
+        return `<blue class="directory">${dir}</blue>`;
+    }).join('\n'));
+    term.echo(files.map(file => {
+        return `<green class="command">${file}</green>`;
+    }).join('\n'));
 }
 
 const commands = {
     help() {
         term.echo(`List of available commands: ${help}`);
     },
+    about() {
+        term.echo(`
+<green>This portfolio is designed to imitate a bash style terminal interface, allowing you to navigate through my <span class="command" data-cmd="projects" style="text-decoration: underline; cursor: pointer;">projects</span>, <span class="command" data-cmd="skills" style="text-decoration: underline; cursor: pointer;">skills</span>, <span class="command" data-cmd="certifications" style="text-decoration: underline; cursor: pointer;">certifications</span>, and <span class="command" data-cmd="education" style="text-decoration: underline; cursor: pointer;">education</span> using familiar UNIX commands. Type "help" for a full list of commands, or navigate using the underlined links in this section.</green>
+            
+<white>Hi! I'm Ediz, and itsDaeka!</white>
+
+<white>About Me</white>
+
+I'm a graduate of Engineering Mathematics from the University of Bristol. I have a strong passion for the application of programming in Data Science and Artificial Intelligence. Having earnt a first in my degree, I have had experience working with various programming languages, libraries, and technologies, through a variety of individual and collaborative projects.
+
+I have a keen interest in applying LLMs, Reinforcement Learning in unison with simulation environments and integrated with elementary machine learning algorithms to deliver functional AI agents for corporate problems.
+
+I believe in following a modular and meticulous work flow to deliver efficient and effective solutions; with an inquisitive and curious nature I hope to stay at the forefront of practical innovation, and look forward to working with inteligent and like-minded individuals.
+
+<white>My Contacts</white>
+* <a href="MatthewEdiz_CV.pdf" target="_blank" rel="noopener noreferrer">Résumé</a>
+* <a href="https://linkedin.com/in/matthew-ediz-beadman-0812a3251" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+* <a href="https://github.com/itsDaeka" target="_blank" rel="noopener noreferrer">GitHub</a>
+* <a href="mailto:matthewediz247@gmail.com" target="_blank" rel="noopener noreferrer">Email</a>
+
+<white>My References</white>
+* <a href="https://www.linkedin.com/in/pinarkosekulacz/" target="_blank" rel="noopener noreferrer">Pınar Köse Kulacz</a> - Senior Director, Telenity
+* <a href="https://www.linkedin.com/in/zakir-erimbetov/" target="_blank" rel="noopener noreferrer">Zakir Erimbetov</a> - Mathematics Teacher & Robotics Specialist, Istanbul International School
+
+<white>If you have any questions or would like to connect, please don't hesitate to reach out!</white>
+`);
+},
     ls(path = null) {
         const printDir = (target) => {
             if (Array.isArray(target)) {
@@ -426,8 +453,25 @@ const term = $('body').terminal(commands, {
 term.pause();
 
 term.on('click', '.command', function() {
-   const command = $(this).text();
-   term.exec(command, { typing: true, delay: 50 });
+    const cmd = $(this).data('cmd') || $(this).text();
+
+    if (cmd === 'projects') {
+        // chain 3 commands with typing
+        (async () => {
+            await term.exec('ls ~/projects/work', { typing: true, delay: 40 });
+            await term.exec('ls ~/projects/personal', { typing: true, delay: 40 });
+            await term.exec('ls ~/projects/university', { typing: true, delay: 40 });
+        })();
+    } else if (cmd === 'skills') {
+        term.exec('ls ~/skills', { typing: true, delay: 40 });
+    } else if (cmd === 'education') {
+        term.exec('ls ~/education', { typing: true, delay: 40 });
+    } else if (cmd === 'certifications') {
+        term.exec('ls ~/certifications', { typing: true, delay: 40 });
+    } else {
+        // default behaviour (single command execution)
+        term.exec(cmd, { typing: true, delay: 50 });
+    }
 });
 
 term.on('click', '.directory', function() {
@@ -438,7 +482,7 @@ term.on('click', '.directory', function() {
 function ready() {
     const seed = rand(256);
     term.echo(() => rainbow(render(' itsDaeka'), seed))
-        .echo('<white>Welcome to my Portfolio Website,\nType "help" for a list of commands, use the "ls" and "cd" commands to navigate the UNIX style terminal portfolio.</white>\n').resume();
+        .echo('<white>Welcome to my Portfolio Website!\nUse the "ls" and "cd" commands to navigate the UNIX style portfolio, or enter "about" to get started.</white>\n').resume();
 }
 
 function rainbow(string, seed) {
