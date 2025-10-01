@@ -162,7 +162,8 @@ const commands = {
     },
     about() {
         term.echo(`
-<green>This portfolio is designed to imitate a bash style terminal interface, allowing you to navigate through my <span class="command" data-cmd="projects" style="text-decoration: underline; cursor: pointer;">projects</span>, <span class="command" data-cmd="skills" style="text-decoration: underline; cursor: pointer;">skills</span>, <span class="command" data-cmd="certifications" style="text-decoration: underline; cursor: pointer;">certifications</span>, and <span class="command" data-cmd="education" style="text-decoration: underline; cursor: pointer;">education</span> using familiar UNIX commands. Type "help" for a full list of commands, or navigate using the underlined links in this section.</green>
+<green>This portfolio is designed to imitate a bash style terminal interface, allowing you to navigate through my <span class="command" data-cmd="projects" style="text-decoration: underline; cursor: pointer;">projects</span>, <span class="command" data-cmd="skills" style="text-decoration: underline; cursor: pointer;">skills</span>, <span class="command" data-cmd="certifications" style="text-decoration: underline; cursor: pointer;">certifications</span>, and <span class="command" data-cmd="education" style="text-decoration: underline; cursor: pointer;">education</span> using familiar UNIX commands. 
+Use the "ls" and "cd" commands to explore the directories of the portfolio, or navigate using the underlined links in this section.</green>
             
 <white>Hi! I'm Ediz, and itsDaeka!</white>
 
@@ -508,7 +509,7 @@ term.on('click', '.directory', function() {
 function ready() {
     const seed = rand(256);
     term.echo(() => rainbow(render(' itsDaeka'), seed))
-        .echo('<white>Welcome to my Portfolio Website!\nUse the "ls" and "cd" commands to navigate the UNIX style portfolio, or enter "about" to get started.</white>\n').resume();
+        .echo('<white>Welcome to my UNIX style Portfolio Website!\nType "help" for a list of commands, or enter "about" to get started.</white>\n').resume();
 }
 
 function rainbow(string, seed) {
