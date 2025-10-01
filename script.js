@@ -130,9 +130,35 @@ function print_home() {
     }).join('\n'));
 }
 
+const commandDescriptions = {
+    help:       "Show this help message",
+    about:      "Overview of the portfolio and links",
+    ls:         "List directory contents",
+    cd:         "Change current directory",
+    joke:       "Fetch a programming joke",
+    credits:    "Show libraries and acknowledgments",
+    echo:       "Print arguments to the terminal",
+    record:     "Record and replay commands",
+    clear:      "Clear the terminal screen"
+};
+
 const commands = {
     help() {
-        term.echo(`List of available commands: ${help}`);
+        this.echo("List of avalailable commands:");
+
+        // sort alphabetically by command name
+        const entries = Object.entries(commandDescriptions).sort(
+            ([a], [b]) => a.localeCompare(b)
+        );
+
+        const maxLen = Math.max(...entries.map(([cmd]) => cmd.length));
+
+        for (const [cmd, desc] of entries) {
+            const padded = cmd.padEnd(maxLen + 2, " ");
+            this.echo(`<white>${padded}</white> ${desc}`);
+        }
+
+        this.echo("");
     },
     about() {
         term.echo(`
