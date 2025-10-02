@@ -29,9 +29,13 @@ const directories = {
             '',
             '<white>Personal Projects</white>',
             [
-                ['jQuery Terminal',
-                'https://terminal.jcubic.pl',
-                'library that adds terminal interface to websites'
+                ['Lorem Ipsum Terminal',
+                'https://example.com/lorem-terminal',
+                'Dolor sit amet, consectetur adipiscing elit'
+                ],
+                ['Project Placeholder',
+                'https://example.com/placeholder',
+                'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua'
                 ]
             ].map(([name, url, description = '']) => {
                 return `* <a href="${url}">${name}</a> &mdash; <white>${description}</white>`;
@@ -43,13 +47,13 @@ const directories = {
             '',
             '<white>University Projects</white>',
             [
-                ['LIPS Scheme',
-                'https://lips.js.org',
-                'Scheme implementation in JavaScript'
+                ['Cursus Maximus',
+                'https://example.com/cursus-maximus',
+                'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip'
                 ],
-                ['Sysend.js',
-                'https://jcu.bi/sysend',
-                'Communication between open tabs'
+                ['Disciplinarum',
+                'https://example.com/disciplinarum',
+                'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat'
                 ]
             ].map(([name, url, description = '']) => {
                 return `* <a href="${url}">${name}</a> &mdash; <white>${description}</white>`;
@@ -61,9 +65,13 @@ const directories = {
             '',
             '<white>Work Projects</white>',
             [
-                ['Wayne',
-                'https://jcu.bi/wayne',
-                'Pure in browser HTTP requests'
+                ['Magnum Opus',
+                'https://example.com/magnum-opus',
+                'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt'
+                ],
+                ['Laboratorium',
+                'https://example.com/laboratorium',
+                'Mollit anim id est laborum curabitur pretium tincidunt lacus'
                 ]
             ].map(([name, url, description = '']) => {
                 return `* <a href="${url}">${name}</a> &mdash; <white>${description}</white>`;
@@ -74,28 +82,27 @@ const directories = {
     skills: [
         '',
         '<white>languages</white>',
-
         [
-            'JavaScript',
-            'TypeScript',
-            'Python',
-            'SQL',
-            'PHP',
-            'Bash'
+            'LoremScript',
+            'DolorLang',
+            'Ipsum++',
+            'SQLlorem',
+            'PHPsum',
+            'Bashlorem'
         ].map(lang => `* <yellow>${lang}</yellow>`),
         '',
         '<white>libraries</white>',
         [
-            'React.js',
-            'Redux',
-            'Jest',
+            'Reactus.js',
+            'Reductus',
+            'Jestorum',
         ].map(lib => `* <green>${lib}</green>`),
         '',
         '<white>tools</white>',
         [
-            'Docker',
-            'git',
-            'GNU/Linux'
+            'Dockor',
+            'Gitus',
+            'GNU/Lorinux'
         ].map(lib => `* <blue>${lib}</blue>`),
         ''
     ].flat()
@@ -506,10 +513,23 @@ term.on('click', '.directory', function() {
     term.exec(`cd ~/${dir}`, { typing: true, delay: 50 });
 });
 
+function print_welcome(target, seed = 123) {
+    const asciiArt = render(' itsDaeka');
+    const rainbowText = rainbow(asciiArt, seed);
+
+    if (target === 'terminal') {
+        term.echo(rainbowText);
+        term.echo('<white>Welcome to my UNIX style Portfolio Website!\nType "help" for a list of commands, or enter "about" to get started.</white>\n');
+    } else if (target instanceof HTMLElement) {
+        target.innerHTML = rainbowText;
+        // subtitle already in HTML, so only inject ASCII
+    }
+}
+
 function ready() {
     const seed = rand(256);
-    term.echo(() => rainbow(render(' itsDaeka'), seed))
-        .echo('<white>Welcome to my UNIX style Portfolio Website!\nType "help" for a list of commands, or enter "about" to get started.</white>\n').resume();
+    print_welcome('terminal', seed);
+    term.resume();
 }
 
 function rainbow(string, seed) {
